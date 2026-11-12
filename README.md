@@ -12,7 +12,7 @@ Built to burn the control ROMs and program ROM of a 4-bit computer.
 RomWriter/
 ├─ firmware/ROMWriter/   Arduino firmware (ROMWriter.ino v2.0)
 ├─ gui/                  PC GUI (Python / tkinter) + self-test + exe build script
-├─ hardware/             Schematic (jpg, pdf), bill of materials (xlsx)
+├─ hardware/             Schematic (png), PCB Gerber files (zip), bill of materials (xlsx)
 └─ release/              Built ROMWriter.exe (not tracked in Git → attached to GitHub Releases)
 ```
 
@@ -29,9 +29,13 @@ RomWriter/
 | D15 | SHIFT_LATCH | | A0 | EEPROM_OE |
 | D16 | SHIFT_CLK | | D2 ~ D9 | EEPROM D0 ~ D7 |
 
-Bill of materials: [`hardware/BOM.xlsx`](hardware/BOM.xlsx)
+![Schematic](hardware/Schematic_AT28C64_Programmer.png)
 
-Schematic: [`hardware/schematic.jpg`](hardware/schematic.jpg), [`hardware/AT28C64_programmer_schematic.pdf`](hardware/AT28C64_programmer_schematic.pdf)
+| File | Contents |
+|---|---|
+| [`hardware/Schematic_AT28C64_Programmer.png`](hardware/Schematic_AT28C64_Programmer.png) | Schematic |
+| [`hardware/Gerber_AT28C64_Programmer_PCB.zip`](hardware/Gerber_AT28C64_Programmer_PCB.zip) | PCB Gerber and drill files (2-layer), ready to upload to a PCB manufacturer |
+| [`hardware/BOM_AT28C64_Programmer.xlsx`](hardware/BOM_AT28C64_Programmer.xlsx) | Bill of materials |
 
 ## Getting started
 

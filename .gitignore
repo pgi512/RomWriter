@@ -10,7 +10,7 @@ __pycache__/
 .venv/
 venv/
 
-# 빌드 결과 (GitHub Releases에 첨부)
+# Build output (attached to GitHub Releases)
 release/
 dist/
 build/

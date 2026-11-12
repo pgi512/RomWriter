@@ -1,10 +1,10 @@
-# 텍스트는 저장소에 LF로 통일
+# Normalize text files to LF in the repository
 * text=auto
 
-# Windows 배치 파일은 CRLF 유지
+# Keep CRLF for Windows batch files
 *.bat text eol=crlf
 
-# 바이너리 (줄바꿈 변환 금지)
+# Binary files (no line-ending conversion)
 *.pdf  binary
 *.xlsx binary
 *.jpg  binary

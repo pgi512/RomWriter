@@ -1,93 +1,95 @@
-# ROM Writer (PC용 AT28C64 프로그래머 GUI)
+# ROM Writer (AT28C64 programmer GUI for PC)
 
-Arduino Pro Micro 프로그래머(`../firmware/ROMWriter/ROMWriter.ino` v2.0, 펌웨어는 수정하지 않음)와 시리얼(115200)로 통신해서
-`.hex`(Logisim) / `.ihx`(Intel HEX) / `.bin` 파일을 EEPROM에 굽고, 읽고, 비교하고, 바이트 단위로 편집하는 프로그램입니다.
-GyuPuter-4bit의 `build/*.hex`(컨트롤 ROM 2개, 프로그램 ROM)를 구울 때 씁니다.
+Talks over serial (115200 baud) to the Arduino Pro Micro programmer (`../firmware/ROMWriter/ROMWriter.ino` v2.0, firmware left unmodified) to
+burn, read, compare, and byte-edit `.hex` (Logisim) / `.ihx` (Intel HEX) / `.bin` files on the EEPROM.
+Used to burn GyuPuter-4bit's `build/*.hex` (two control ROMs and the program ROM).
 
-## 실행
+> The interface language is Korean. Korean labels are given in parentheses below where helpful.
 
-| 방법 | 설명 |
+## Running
+
+| Method | Description |
 |---|---|
-| `ROMWriter.exe` | 설치 없는 단일 파일. 파이썬이 없어도 실행됩니다. |
-| `run.bat` / `python romwriter_gui.py` | 소스로 실행 (Python 3 + `pip install pyserial` 필요) |
+| `ROMWriter.exe` | Single file, no install. Runs without Python. |
+| `run.bat` / `python romwriter_gui.py` | Run from source (requires Python 3 + `pip install pyserial`) |
 
-> **주의: `I:`(NAS)에서는 프로그램 실행이 막혀 있습니다.** (`I:`에 `whoami.exe`를 복사해도 "Access is denied" — 2026-11-09 확인)
-> `.exe`는 **로컬 드라이브(C:, D:)에 두고 실행**하세요. 이 프로젝트에서는 `D:\ROMWriter\ROMWriter.exe`에 있습니다.
-> 앞서 `run.bat`에서 났던 "액세스 권한 없음"도 같은 원인일 가능성이 있습니다 (확인하지는 못함).
+> **Note: program execution is blocked on `I:` (NAS).** (Even a copy of `whoami.exe` on `I:` fails with "Access is denied" — confirmed 2026-11-09.)
+> Keep the `.exe` on a **local drive (C:, D:)** and run it from there. In this project it lives at `D:\ROMWriter\ROMWriter.exe`.
+> The "access denied" error seen earlier with `run.bat` may have the same cause (not confirmed).
 
-## 화면 구성
+## Screen layout
 
-- **리본(맨 위)**: 읽기 / 쓰기 / 편집 / 도구 탭 (Ctrl+1~4). 선택한 탭의 도구 줄이 바로 아래에 붙습니다. 탭마다 색이 다릅니다.
-- **연결 줄(왼쪽 정렬)**: 포트 선택, 새로고침, 연결/해제, 연결 상태. Arduino 포트는 자동으로 먼저 골라 줍니다.
-- **상태 띠**: 지금 하는 일(읽는 중 / 쓰는 중 / 검증하는 중 / 지우는 중)을 색과 글자로 표시. 진행률, 남은 시간, 결과(완료/문제).
-- **선택한 바이트(왼쪽)**: 주소, 값(16진 입력), 비트 D7~D0 토글, 10진/2진/문자, 선택 범위, EEPROM과의 일치 여부, 그 바이트만 읽기/쓰기.
-- **데이터 보기(가운데)**: 16진 편집기. **통신 로그** 탭에서 주고받은 시리얼 내용을 볼 수 있습니다.
-- 메뉴 막대: 파일(열기, 최근 파일, 저장), 편집, 장치, 보기(모드, 테마, 한 줄 바이트 수), 도움말. 테마는 라이트/다크/시스템 설정 따르기.
+- **Ribbon (top)**: Read (읽기) / Write (쓰기) / Edit (편집) / Tools (도구) tabs (Ctrl+1~4). The selected tab's toolbar sits right below. Each tab has its own color.
+- **Connection bar (left-aligned)**: port selector, refresh, connect/disconnect, connection status. Arduino ports are auto-selected first.
+- **Status strip**: shows the current operation (reading / writing / verifying / erasing) by color and text, plus progress, time remaining, and the result (done / problem).
+- **Selected byte (left)**: address, value (hex input), D7~D0 bit toggles, decimal/binary/character, selection range, whether it matches the EEPROM, and read/write for just that byte.
+- **Data view (center)**: hex editor. The **Serial log** (통신 로그) tab shows the serial traffic.
+- Menu bar: File (open, recent files, save), Edit, Device, View (mode, theme, bytes per row), Help. Themes: light / dark / follow system.
 
-## 사용 순서
+## Workflow
 
-1. 포트를 고르고 **연결**.
-2. **읽기**: 범위를 고르고 `F5`. EEPROM은 바뀌지 않습니다.
-3. **쓰기**: 파일을 열면 표에 미리 보이고(EEPROM에는 아직 안 씀), **파일 굽기**를 누르면 쓰고 **자동으로 다시 읽어서 비교**합니다. 틀린 칸은 분홍색, 틀린 비트는 `DATA3` 식으로 알려 줍니다.
-4. **편집**: 표에서 바꾼 값은 노란색(EEPROM에 아직 안 쓴 변경). **변경분 쓰기**는 노란 칸만 쓰고 검증합니다.
-5. **도구**: 통신 확인, 빈 칸 검사(8KB 읽기), 표 내용 체크섬(합계/XOR/CRC32), 전체 지우기.
+1. Pick a port and **Connect** (연결).
+2. **Read**: choose a range and press `F5`. The EEPROM is not modified.
+3. **Write**: opening a file previews it in the table (nothing is written yet). **Burn file** (파일 굽기) writes it and then **automatically reads it back and compares**. Mismatched cells are shown in pink, and bad bits are reported like `DATA3`.
+4. **Edit**: values changed in the table turn yellow (changes not yet written to the EEPROM). **Write changes** (변경분 쓰기) writes and verifies only the yellow cells.
+5. **Tools**: communication check, blank check (reads 8KB), checksum of the table (sum/XOR/CRC32), erase all.
 
-## 데이터 보기(16진 편집기) 사용법
+## Using the data view (hex editor)
 
-| 동작 | 방법 |
+| Action | How |
 |---|---|
-| 값 바꾸기 | 16진수 칸 클릭 후 16진수 두 자리 입력 |
-| 문자로 입력 | 오른쪽 ASCII 칸 클릭 후 글자 입력 (한글 등은 UTF-8 여러 바이트로 들어감). `F2`로 칸 전환 |
-| 범위 선택 | 드래그 또는 Shift+클릭 / Shift+방향키. **드래그하면 바로 클립보드에 복사** |
-| 복사 / 붙여넣기 | Ctrl+C / Ctrl+V (선택 시작 주소부터). 16진수 칸에서는 `DE AD BE EF`, `0x10,0x20`, `DEADBEEF` 를 16진수로, 그 외는 문자로. ASCII 칸에서는 항상 문자로 |
-| 되돌리기 | Ctrl+Z (붙여넣기, 범위 채우기는 한 번에 통째로) |
-| 이동 | 방향키, PageUp/Down, Home/End, 주소 이동(Ctrl+G) |
-| 표시 범위 | 읽은(또는 파일에 있는) 범위까지만 표시. 표 밖 주소로 이동하면 그 주소까지 넓어짐. 새로 읽으면 다시 줄어듦 |
-| 한 줄 바이트 수 | `자동`(창 너비에 맞춤) / 8 / 16 / 32 / 64 |
+| Change a value | Click a hex cell and type two hex digits |
+| Type as text | Click the ASCII column on the right and type (non-ASCII such as Hangul goes in as multiple UTF-8 bytes). `F2` switches columns |
+| Select a range | Drag, or Shift+click / Shift+arrow keys. **Dragging copies to the clipboard immediately** |
+| Copy / paste | Ctrl+C / Ctrl+V (from the start of the selection). In the hex column, `DE AD BE EF`, `0x10,0x20`, `DEADBEEF` are parsed as hex, anything else as text. In the ASCII column, always as text |
+| Undo | Ctrl+Z (a paste or range fill is undone as one step) |
+| Navigate | Arrow keys, PageUp/Down, Home/End, go to address (Ctrl+G) |
+| Displayed range | Only up to what was read (or is in the file). Going to an address outside the table extends it to that address. A new read shrinks it again |
+| Bytes per row | `Auto` (fit to window width) / 8 / 16 / 32 / 64 |
 
-단축키: `Ctrl+O` 열기 · `Ctrl+S` 표 저장 · `F5` 읽기 · `Ctrl+Z` 되돌리기 · `Ctrl+G` 주소 이동 · `Ctrl+1~4` 모드 전환 · `F2` 입력 칸 전환
+Shortcuts: `Ctrl+O` open · `Ctrl+S` save table · `F5` read · `Ctrl+Z` undo · `Ctrl+G` go to address · `Ctrl+1~4` switch mode · `F2` switch input column
 
-## 펌웨어 동작상 알아둘 점 (ROMWriter.ino를 읽고 확인)
+## Firmware quirks to know (confirmed by reading ROMWriter.ino)
 
-- `LOAD,start`의 `start` 값은 **무시**되고 주소는 HEX 레코드 안의 값을 씁니다. → 이 프로그램은 오프셋을 더한 레코드를 보냅니다.
-- 쓰기에 **실패해도 "Loaded N bytes"라고 답합니다.** → 그래서 굽고 나서 반드시 다시 읽어 비교합니다 (검증을 끄면 실패를 알 수 없음).
-- 숫자만 있으면 10진수로 해석합니다. → 주소는 항상 `0x`를 붙여 보냅니다.
-- 쓰기 직후 1.5ms 만에 읽어서 검증하는데, AT28C64B의 쓰기 사이클(tWC)이 더 길면(제 기억으로 최대 약 10ms) 데이터 폴링 때문에 틀리게 읽힐 수 있습니다. 데이터시트 확인 필요 (펌웨어 쪽 문제).
+- The `start` value in `LOAD,start` is **ignored**; addresses come from the HEX records themselves. → This program sends records with the offset already added.
+- The firmware **answers "Loaded N bytes" even when a write fails.** → So after burning, the data is always read back and compared (with verification off, failures go unnoticed).
+- Bare numbers are parsed as decimal. → Addresses are always sent with a `0x` prefix.
+- The firmware verifies by reading only 1.5ms after a write. If the AT28C64B's write cycle (tWC) is longer than that (up to about 10ms, as far as I remember), data polling may cause a wrong read. Needs checking against the datasheet (a firmware-side issue).
 
-## 검증 상태 (2026-11-09)
+## Verification status (2026-11-09)
 
-- **자동 테스트 통과** (`python selftest.py`): 펌웨어 시리얼 동작을 흉내 낸 가짜 장치(TCP 소켓)로 파일 형식 해석, 굽기+검증, 읽기, 편집, 범위 확장, 문자 입력, 드래그 복사, 붙여넣기, 지우기, 데이터 선 하나가 고장난 경우의 검증 실패 보고, 다크모드 전환, 레이아웃 배치까지 확인.
-- **실물 확인됨**: COM16(Arduino Leonardo)에서 8KB 읽기(`HEXDUMP`) 성공 (EEPROM은 전부 FF).
-- **실물 미확인**: **쓰기(`LOAD`)**. 처음 쓸 때는 `build/ctrl_rom1.hex`를 `0x0000`에 구워 보고 검증 결과를 확인하세요.
-- 눈으로 본 화면 확인은 사용자가 보낸 캡처로만 했습니다 (이후 바뀐 부분은 직접 확인 못 함).
+- **Self-test passes** (`python selftest.py`): using a fake device (TCP socket) that mimics the firmware's serial behavior, it covers file format parsing, burn + verify, read, edit, range extension, text input, drag-copy, paste, erase, reporting a verify failure when one data line is broken, dark mode switching, and layout placement.
+- **Verified on hardware**: 8KB read (`HEXDUMP`) succeeded on COM16 (Arduino Leonardo); the EEPROM was all FF.
+- **Not yet verified on hardware**: **writing (`LOAD`)**. For the first write, burn `build/ctrl_rom1.hex` at `0x0000` and check the verification result.
+- Visual checks of the UI were done only from screenshots sent by the user (changes made after that were not checked directly).
 
-## 알려진 한계
+## Known limitations
 
-- 메뉴 막대와 펼침 메뉴는 Windows 기본 색이라 다크모드에서도 바뀌지 않습니다 (제목 표시줄은 다크).
-- ASCII 열은 0x20~0x7E만 글자로 보이고 나머지(한글의 UTF-8 바이트 등)는 `.`으로 보입니다.
-- 앱을 종료하면 클립보드 내용이 남는지는 확인하지 못했습니다.
-- `.exe`에는 가짜 장치 시험용 `socket://` 주소 처리가 빠져 있습니다 (실제 COM 포트 사용에는 영향 없음).
-- 지우기는 시작하면 중간에 멈출 수 없습니다 (펌웨어 구조).
-- 보드와의 통신은 한 번에 한 가지 작업만 합니다.
+- The menu bar and drop-down menus use the Windows default colors and do not change in dark mode (the title bar does go dark).
+- The ASCII column shows only 0x20~0x7E as characters; everything else (e.g. UTF-8 bytes of Hangul) appears as `.`.
+- Whether clipboard contents survive after the app exits has not been checked.
+- The `.exe` does not include the `socket://` address handling used for fake-device testing (no effect on real COM ports).
+- An erase cannot be stopped once started (a consequence of the firmware's structure).
+- Only one operation at a time can talk to the board.
 
-## 파일 구성
+## Files
 
-| 파일 | 내용 |
+| File | Contents |
 |---|---|
-| `romwriter_gui.py` | 화면(모드 탭, 상태 띠, 16진 편집기, 메뉴, 테마) |
-| `romwriter_core.py` | 화면과 무관한 부분: 파일 형식 해석, 시리얼 통신, 비교 |
-| `selftest.py` | 가짜 장치로 하는 자동 테스트 |
-| `make_icon.py`, `assets/` | 앱 아이콘 (DIP 칩 모양, Pillow로 생성) |
-| `build_exe.bat` | `.exe` 빌드 스크립트 (아래 참고) |
-| `run.bat`, `requirements.txt` | 소스 실행용 |
-| `dist/ROMWriter.exe` | 빌드 결과 보관용 복사본 (NAS라서 여기서는 실행 불가, `D:\ROMWriter`에서 실행) |
+| `romwriter_gui.py` | UI (mode tabs, status strip, hex editor, menus, themes) |
+| `romwriter_core.py` | UI-independent parts: file format parsing, serial communication, comparison |
+| `selftest.py` | Automated tests against a fake device |
+| `make_icon.py`, `assets/` | App icon (DIP chip shape, generated with Pillow) |
+| `build_exe.bat` | `.exe` build script (see below) |
+| `run.bat`, `requirements.txt` | For running from source |
+| `dist/ROMWriter.exe` | Archived copy of the build output (not tracked in Git; cannot run from the NAS, run it from `D:\ROMWriter`) |
 
-설정은 `%APPDATA%\ROMWriterGUI\settings.json`(마지막 포트, 최근 파일, 테마, 한 줄 바이트 수)에 저장되고, 실행 파일 옆에는 아무것도 쓰지 않습니다.
+Settings are stored in `%APPDATA%\ROMWriterGUI\settings.json` (last port, recent files, theme, bytes per row); nothing is written next to the executable.
 
-## .exe 다시 만들기
+## Rebuilding the .exe
 
-1. 이 폴더를 **로컬 드라이브(D: 등)로 복사**합니다 (NAS에서는 빌드 결과를 실행할 수 없음).
-2. 복사한 폴더에서 `build_exe.bat` 실행 (Python 3, 인터넷 필요 — PyInstaller, pyserial을 설치함).
-3. 결과: `dist\ROMWriter.exe` (약 13MB, 콘솔 창 없음, 아이콘 포함, 단일 파일).
+1. **Copy this folder to a local drive (D:, etc.)** (build output cannot be executed from the NAS).
+2. Run `build_exe.bat` in the copied folder (requires Python 3 and internet access — it installs PyInstaller and pyserial).
+3. Output: `dist\ROMWriter.exe` (about 13MB, no console window, icon included, single file).
 
-참고: PyInstaller로 만든 서명 없는 `.exe`는 처음 실행할 때 느리거나(압축 풀기), 백신이 의심 파일로 표시할 수 있습니다.
+Note: an unsigned `.exe` built with PyInstaller may start slowly the first time (it unpacks itself) and may be flagged as suspicious by antivirus software.

@@ -1,0 +1,12 @@
+# 텍스트는 저장소에 LF로 통일
+* text=auto
+
+# Windows 배치 파일은 CRLF 유지
+*.bat text eol=crlf
+
+# 바이너리 (줄바꿈 변환 금지)
+*.pdf  binary
+*.xlsx binary
+*.jpg  binary
+*.png  binary
+*.ico  binary

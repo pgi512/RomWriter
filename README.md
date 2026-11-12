@@ -22,6 +22,7 @@ RomWriter/
 - AT28C64B-15PU EEPROM
 - 74HC595N shift register ×2 (address lines)
 - 7-segment display + 74LS48 ×2 (optional, status display)
+- PCB: 2-layer, 80 × 57 mm, all through-hole
 
 | Arduino | Signal | | Arduino | Signal |
 |---|---|---|---|---|
@@ -39,11 +40,12 @@ RomWriter/
 
 ## Getting started
 
-1. Upload `firmware/ROMWriter/ROMWriter.ino` to the Arduino Pro Micro.
-2. Launch the GUI.
+1. Order the PCB with `hardware/Gerber_AT28C64_Programmer_PCB.zip` and solder the parts listed in the BOM.
+2. Upload `firmware/ROMWriter/ROMWriter.ino` to the Arduino Pro Micro.
+3. Launch the GUI.
    - **exe**: `ROMWriter.exe` from Releases (no install needed)
    - **source**: `cd gui` → `pip install -r requirements.txt` → `python romwriter_gui.py` (or `run.bat`)
-3. Pick the port, click **Connect**, then use the Read / Write / Edit / Tools tabs.
+4. Pick the port, click **Connect**, then use the Read / Write / Edit / Tools tabs.
 
 For detailed usage, shortcuts, firmware quirks, and how to build the exe, see **[gui/README.md](gui/README.md)**.
 
